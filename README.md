@@ -17,10 +17,15 @@ The mutant_struct2mat function has been renamed struct2mat_mutant to keep it con
 
 
 plot_mutant now has some new arguements that can help with cleaning up plots
-1. The file struct
-2. The residues to be graphed, defaults to 'all'
-3. The style of figure. Right now two options, 'default' which look like our common EPR figures, or 'figure' which looks like the panel
-4. The color scheme selected. I've preloaded a few in the plot_mutant file, add your own as requierd. Current ones are 'default','4b12figure', '5e3figure', 'dualbinding'. Alternatively you can specificy your own colors for specific spectra types (i.e monomerApo)
++ The file struct
++ The residues to be graphed, defaults to 'all'
++ The style of figure. Right now two options, 'default' which look like our common EPR figures, or 'figure' which looks like the panel
++ The color scheme selected. I've preloaded a few in the plot_mutant file, add your own as requierd. Current ones are 
+..'default',
+..'4b12figure'
+..'5e3figure', 
+..'dualbinding'
+.. Alternatively you can specificy your own colors for specific spectra types (i.e monomerApo)
 
 > Ex. plot_mutant(files,'32','figure','4b12figure');
 Here, the configuration of 'residue', 'figure', and '4b12figure' are used.
