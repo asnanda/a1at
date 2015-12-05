@@ -1,7 +1,68 @@
+% generate_struct: Open .spc files from our CW EPR experiments and
+% load the data, and characteristics, into a struct for future manipulation
+%
+% generate_struct: when run without any inputs, opens a GUI so that the we can
+% select epr files to open. It can also accept a path to a file as
+% an input if the path is put in 'quotes' with the extension '.spc'
+%IN
+%        generate_struct;  -> UI. window
+%        generate_struct('directory1')
+%        generate_struct('directory1','directory2'..etc) NOTE -> Inefficent
+%OUT
+%           struct files = generate_struct;
+%           struct files = generate_struct('path1','path2','path3'...); 
+%
+%
+% generate_struct: A function that opens spc files related to the antibody 
+% CW experiments and extracts their data for further mainpulation. It pulls
+% relevant spectral parameters, generates normalized and baseline
+% corrected intensity measurements, and generates calculated spectral
+% values (?H, spectral moments, etc)
+%
+%
+% Inputs:
+%    input0     - none, results in a UI for selection
+%    input1     - string input to the path of a file
+%
+% Outputs:
+%  output0  - a struct  storing the following data:
+%     file name                        .name             ex. {'name'}
+%     file path                        .filepath         ex. {'file/path/file.spc'}
+%     mutant                           .mutant           ex.   {'32'}
+%     antibody                         .antibody         ex. {'Apo'} / {'4b12'} / {'5e3'} 
+%     state                            .state            ex. {'monomer'} / {'polymer'}
+%     magnetic field data (mT)         .x                ex. [val1...valn]
+%     intensity data                   .y                ex. [val1...valn]
+%     uncor. single integral           .si               ex. [val1....valn]
+%     uncor. double integral value     .di_val           ex. (2e8)
+%     cor. intensity data,             .y_cor            ex. [val1...valn]
+%     cor. singular integral           .si_cor           ex. [val1...valn]
+%     cor. double integral value       .di_val_cor       ex. (2e8)
+%     normalized cor. intensity data   .y_cor_norm       ex. [val1....valn]
+%     spectral parameters              .spectra_params   ex. [MWFreq,Npoints..etc]
+%     1/?H,center peak separation(mT)  .delH             ex. (4.223)
+%     1/first CENTRAL spec. moment     .fsm              ex. (0)
+%     1/second CENTRAL spec. moment    .ssm              ex. (4.e33)
+
+% Example: 
+%    files = generate_struct;
+%    files = generate_struct('/directory/with/files/')
+%          
+%
+% Other m-files required:   baseline_correct_mutant.m - for  basline correction
+%
+% Subfunctions:             get_characteristics(characteristic, name)
+%                               - parses file names,
+%                               - pulls trial conditions (antibody, state, etc)
+%                           get_mutant_moment
+%
+% MAT-files required:       easyspin package for eprload
+%
+
 
 function files = generate_struct(varargin)
 %define the empty struct -> files
-files = struct('filepath',{},'name',{},'mutant',{},'state',{},'antibody',{},'x',{},'y',{},'si',{},'di',{},'di_val',{},'y_cor',{},'si_cor',{},'di_val_cor',{},'spectra_params',{},'y_cor_norm',{},'delH',{},'fsm',{},'ssm',{});
+files = struct('filepath',{},'name',{},'mutant',{},'state',{},'antibody',{},'x',{},'y',{},'si',{},'di',{},'di_val',{},'y_cor',{},'si_cor',{},'di_val_cor',{},'y_cor_norm',{},'spectra_params',{},'delH',{},'fsm',{},'ssm',{});
 
 % either load files, or open them.
 switch nargin
@@ -13,26 +74,19 @@ switch nargin
         % handle a directory
         filepath = varargin{1};
         tmp_filenames = dir(strcat(filepath,'*.spc'));
-        filenames = mutant_struct2mat(tmp_filenames,'name');
+        filenames = struct2mat_mutant(tmp_filenames,'name');
         
-    otherwise
-        warning('Cannot handle more than one file');
-        % filenames must have the spc on it. shoud be filepath, filename,
-        % sc
+    otherwise % more than one directory (uses recursion) -> can take time
+        % call the generate struct function on the directories passed in,
+        first = generate_struct(varargin{1});
+        for r = 2:nargin
+            first = cat(2,first,generate_struct(varargin{r})); % join them together into one struct
+        end
         
-        
-    
-    otherwise
-        
-        
-        
-        warning('Not ready to handle manual arguements! Ahhh!')
-        return
+        files = first;
        
-        
-        % how to handle mutiple file_paths
-            
-         % check all files are unique 
+       
+        return
         
         
 end % nargin end
@@ -72,19 +126,19 @@ for i = 1:NUMBER_OF_FILES
     files(i).spectra_params = Params;
     
      % get corrected magnetic field, intensity data------------------------
-     % baseline corretion is carried out by the bc_polyfit function, found
-     % in bc_polyfit.m
+     % baseline corretion is carried out by the baseline_correct_mutant function, found
+     % in baseline_correct_mutant.m
      % current paramters used are "linear" for EPR correction, and "Poly2"
      % for absorbance spectra correction. 
      
-     files(i).y_cor = bc_polyfit(files(i).x,files(i).y,'epr','linear');
-     files(i).si_cor = bc_polyfit(files(i).x,cumsum(files(i).y_cor),'absorbance','poly2');
+     files(i).y_cor = baseline_correct_mutant(files(i).x,files(i).y,'epr','linear');
+     files(i).si_cor = baseline_correct_mutant(files(i).x,cumsum(files(i).y_cor),'absorbance','poly2');
      files(i).di_val_cor = trapz(files(i).x,files(i).si_cor);
      files(i).y_cor_norm = files(i).y_cor/files(i).di_val_cor;
     
     % generate spectral summary measurements--------------------------------
     files(i).delH = 1/(files(i).x(files(i).y == min(files(i).y)) - files(i).x(files(i).y == max(files(i).y)));
-    files(i).fsm = moment(files(i).y_cor_norm,1);
+    files(i).fsm = moment(files(i).y_cor_norm,1); % should always be zero
     files(i).fsmv2 = 1/get_mutant_moment(files,i,1);
     files(i).ssm = 1/(moment(files(i).y_cor_norm,2));
     files(i).ssmv2 = 1/get_mutant_moment(files,i,2);
@@ -96,11 +150,14 @@ end % loop through files end
 
 
 
+% sort the struct in the following way:
+% Mutant(numerical), state(mon, pol), antibody(apo, 4b12, 5e3)
+
+
+
 
 
 end % generate_struct end
-
-
 
 
 
@@ -119,7 +176,12 @@ switch characteristic
 
     case 'antibody'
         if length(regexpi(name,'4b12','match')) >= 1
-            result = {'4b12'};
+            if length(regexpi(name,'5e3','match')) >= 1 % handles dual binding condition
+                result = {'4b12-5e3'};
+            else
+                result = {'4b12'};
+            end
+           
         elseif length(regexpi(name,'5e3','match')) >= 1
             result = {'5e3'};
         else
@@ -136,11 +198,20 @@ switch characteristic
         end
 
 end % end switch statement
-end % end funciton
+end % end function
+
+
+function files_sorted = mutant_struct_sort(struct)
+
+
+
+
+
+end
+
 
 
 function result = get_mutant_moment(files,n,order)
-
 switch order
     case 1
         x_vals = files(n).x;
@@ -158,49 +229,5 @@ end % end N switch
 end
 
 
-
-% generate_struct: Open .spc files from our CW EPR experiments and
-% load the data, and characteristics, into a struct for future manipluation
-%
-% generate_struct: when run without any inputs, opens a GUI so that the we can
-% select epr files to open. It can also accept a path to a file as
-% an input if the path is put in 'quotes' with the extension '.spc'
-%
-% generate_struct -> UI. window
-% generate_struct('path1','path2','path3'...)
-%
-% struct files = generate_struct
-% struct files = generate_struct('path1','path2','path3'...) 
-
-
-% generate_struct: A function that opens spc files related to the antibody 
-%CW experiments and extracts their data for further mainpulation.
-%Information pulled includes: filename, file path, antibody, state,
-%magnetic field data, intensity data, uncorrected single integral values,
-%uuncorrected double integral values, uncorreted singular value double
-%integral,corrected single integral values,
-%corrected double integral values, corrected singular value double
-%integral,
-%
-%
-% Inputs:
-%    input0     - none, results in a UI for selection
-%    inputn     - string input to the path of a file
-%
-% Outputs:
-%    output0    - a struct, files, storing the following data:
-
-% Example: 
-%    files = generate_struct
-%    files = generate_struct('/path/to/file.spc', /another/path/to/files.scp,....')
-%          
-%
-% Other m-files required:   bc_polyfit.m - for polynomial basline
-%                           correction
-%
-% Subfunctions:             get_characteristics
-%
-% MAT-files required:       easyspin package for eprload
-%
 
 

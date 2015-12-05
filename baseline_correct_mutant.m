@@ -1,12 +1,11 @@
-
-%currently, adding linear capabilty for the absobrance spectra. 
-
-%current polyfit method suffers from main probelm:
-% there's no clear place to put the second point; 
-% temporary solution, make the epr fitting be linear. 
+% working. 
 
 
-function [corrected_value1, corrected_value2] = bc_polyfit(b,s,spectra,fit_type)
+
+
+
+
+function [corrected_value1, corrected_value2] = baseline_correct_mutant(b,s,spectra,fit_type)
 if isempty(s) == 0
     switch spectra
         case 'epr'
@@ -72,21 +71,18 @@ if isempty(s) == 0
             x_set1 = cat(1,(b(up_start:up_end)), b(down_start:down_end));
          
                     
-            y_set2 = [median(s(up_start:up_end)), median(s(down_start:down_end))]; %generated w medians
-            x_set2 = [b(s == y_set2(1)), b(s == y_set2(2))];
-            
-            
+      
            
             switch fit_type
                 case 'linear'
-                   
+                    warning('Warning: Yields a poor fit, and a poor correction.')
                     [lin_coeff1,Stc] = polyfit(x_set1,y_set1',1);
-                    [lin_coeff2,Stc] = polyfit(x_set2,y_set2,1);
-
+                    
                     for n = 1:length(s)
                         corrected_value1(n) = s(n) - (lin_coeff1(1)*(b(n))+lin_coeff1(2));
-                        corrected_value2(n) = s(n) - (lin_coeff2(1)*(b(n))+lin_coeff2(2));
+                        corrected_value2(n) = 0; % no secondary value is calculated.
                     end
+                    
                 
                 case 'poly2'
                     % empircal evidence suggests that downfield paramters need to
@@ -101,7 +97,7 @@ if isempty(s) == 0
 
                     for n = 1:length(s)
                         corrected_value1(n) = s(n) - (poly_coeff1(1)*(b(n)^2)+poly_coeff1(2)*b(n)+poly_coeff1(3));
-                        corrected_value2(n) = 0;
+                        corrected_value2(n) = 0; % no secondary value is put out.
                     end
                     
                     
@@ -140,7 +136,7 @@ if isempty(s) == 0
 
 else
     warning('Error calculating baseline, point set returned');
-    corrected_value = s;
+    corrected_value1 = s;
     
 end % end outer protective loop
 
