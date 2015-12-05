@@ -3,6 +3,7 @@ functions for dealing with CW EPR spectra of a1at mutants
 
 
 %CHANGES
+You can find examples for making a panel in fourbtwelve_figure.m or Example_script.m
 
 The generate_struct function can now take muultiple directores as inputs,
 Or open a UI window for you to select them.
