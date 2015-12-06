@@ -1,6 +1,45 @@
 clc
 clear all
 close all
+
+files = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/4b12Data/monomer/');
+files2 = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/4b12Data/4b12/');
+%second spectral moment^{-1} vs
+
+figure(1)
+title('\DeltaH^{-1} vs  Residue / Monomer, Monomer4b12')
+
+hold on
+scatter((struct2mat_mutant(files,'delH')),struct2mat_mutant(files,'p2pA'),'k','filled');
+scatter((struct2mat_mutant(files2,'delH')),struct2mat_mutant(files2,'p2pA'),'r','filled');
+
+
+for m = 1:length(files)
+    for z = 1:length(files2)
+        if strcmp(files(m).mutant, files2(z).mutant)
+            quiver(files(m).delH,files(m).p2pA,files2(z).delH -files(m).delH,files2(z).p2pA - files(m).p2pA)
+        end
+    end
+end
+
+
+
+hold off
+legend('Monomer','4b12');
+xlabel('\DeltaH^{-1}','fontsize',12)
+ylabel('SSM^{-1}','fontsize',12);
+
+labelpoints(struct2mat_mutant(files,'delH'),struct2mat_mutant(files,'p2pA'),struct2mat_mutant(files,'mutant'),'N')
+labelpoints(struct2mat_mutant(files2,'delH'),struct2mat_mutant(files2,'p2pA'),struct2mat_mutant(files2,'mutant'),'S')
+%labelpoints(mutant_struct2mat(files3,'delH'),mutant_struct2mat(files3,'ssm'),mutant_struct2mat(files3,'mutant'),'S')
+
+
+
+
+
+break
+
+
 %CHANGES
 
 % the generate_struct function can now take muultiple directores as inputs,

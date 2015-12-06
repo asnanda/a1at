@@ -125,24 +125,30 @@ for i = 1:NUMBER_OF_FILES
     files(i).di_val = trapz(cumsum(s)); % a value for the area under the absorbance curve
     files(i).spectra_params = Params;
     
-     % get corrected magnetic field, intensity data------------------------
-     % baseline corretion is carried out by the baseline_correct_mutant function, found
-     % in baseline_correct_mutant.m
-     % current paramters used are "linear" for EPR correction, and "Poly2"
-     % for absorbance spectra correction. 
+    % get corrected magnetic field, intensity data------------------------
+    % baseline corretion is carried out by the baseline_correct_mutant function, found
+    % in baseline_correct_mutant.m
+    % current paramters used are "linear" for EPR correction, and "Poly2"
+    % for absorbance spectra correction. 
      
-     files(i).y_cor = baseline_correct_mutant(files(i).x,files(i).y,'epr','linear');
-     files(i).si_cor = baseline_correct_mutant(files(i).x,cumsum(files(i).y_cor),'absorbance','poly2');
-     files(i).di_val_cor = trapz(files(i).x,files(i).si_cor);
-     files(i).y_cor_norm = files(i).y_cor/files(i).di_val_cor;
+    files(i).y_cor = baseline_correct_mutant(files(i).x,files(i).y,'epr','linear');
+    files(i).si_cor = baseline_correct_mutant(files(i).x,cumsum(files(i).y_cor),'absorbance','poly2');
+    files(i).di_val_cor = trapz(files(i).x,files(i).si_cor);
+    files(i).y_cor_norm = files(i).y_cor/files(i).di_val_cor;
+    files(i).y_cor_formoment = files(i).y_cor/trapz(files(i).y_cor);
+    files(i).si_cor_norm = files(i).si_cor / (files(i).di_val_cor);
+    files(i).si_cor_from_y_cor_norm = baseline_correct_mutant(files(i).x,cumsum(files(i).y_cor_norm),'absorbance','poly2');
     
     % generate spectral summary measurements--------------------------------
     files(i).delH = 1/(files(i).x(files(i).y == min(files(i).y)) - files(i).x(files(i).y == max(files(i).y)));
+    files(i).p2pA = max(files(i).y_cor_norm)-min(files(i).y_cor_norm);
+    
     files(i).fsm = moment(files(i).y_cor_norm,1); % should always be zero
-    files(i).fsmv2 = 1/get_mutant_moment(files,i,1);
     files(i).ssm = 1/(moment(files(i).y_cor_norm,2));
-    files(i).ssmv2 = 1/get_mutant_moment(files,i,2);
-     
+
+    files(i).fsmv2 =get_mutant_moment(files,i,1);
+    files(i).ssmv2 = log(1/get_mutant_moment(files,i,2));
+
      
     
 
@@ -206,24 +212,36 @@ function files_sorted = mutant_struct_sort(struct)
 
 
 
-
 end
 
 
 
 function result = get_mutant_moment(files,n,order)
+% new implementation
+
+switch order
+    case 1
+        result = 0; % doesnt' involve calcuating the 1st moment
+    case 2
+        result = (trapz(((files(n).x).^2)'.*files(n).y_cor_norm)/trapz(files(n).y_cor_norm)) - (trapz((files(n).x)'.*files(n).y_cor_norm)/trapz(files(n).y_cor_norm)).^2;
+end
+
+
+return
+
+%first attempt
 switch order
     case 1
         x_vals = files(n).x;
-        y_vals = x_vals'.*files(n).y_cor_norm;
-        fsm = trapz(y_vals)/trapz(files(n).y_cor_norm);
+        y_vals = x_vals'.*files(n).y_cor_formoment;
+        fsm = trapz(y_vals);
         result = fsm;
        
     case 2
         fsm = get_mutant_moment(files,n,1);
         x_vals = (files(n).x - fsm).^2;
-        y_vals = x_vals'.*files(n).y_cor_norm;
-        ssm = trapz(y_vals)/trapz(files(n).y_cor_norm);
+        y_vals = x_vals'.*files(n).y_cor_formoment;
+        ssm = trapz(y_vals);
         result = ssm;
 end % end N switch
 end
