@@ -1,7 +1,7 @@
 clc
 clear all
 close all
-files = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/4b12Data/4b12/');
+files = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/4b12Data/all/');
 files2 = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/4b12Data/monomer/');
 files3 = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/4b12Data/4b12/');
 

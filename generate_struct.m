@@ -1,4 +1,4 @@
-% generate_struct: Open .spc files from our CW EPR experiments and
+%{ generate_struct: Open .spc files from our CW EPR experiments and
 % load the data, and characteristics, into a struct for future manipulation
 %
 % generate_struct: when run without any inputs, opens a GUI so that the we can
@@ -57,8 +57,7 @@
 %                           get_mutant_moment
 %
 % MAT-files required:       easyspin package for eprload
-%
-
+%}
 
 function files = generate_struct(varargin)
 %define the empty struct -> files
@@ -83,7 +82,7 @@ switch nargin
             first = cat(2,first,generate_struct(varargin{r})); % join them together into one struct
         end
         
-        files = first;
+        files = mutant_struct_sort(first);
        
        
         return
@@ -159,7 +158,7 @@ end % loop through files end
 % sort the struct in the following way:
 % Mutant(numerical), state(mon, pol), antibody(apo, 4b12, 5e3)
 
-
+files = mutant_struct_sort(files);
 
 
 
@@ -207,11 +206,28 @@ end % end switch statement
 end % end function
 
 
-function files_sorted = mutant_struct_sort(struct)
-
-
-
-
+function files_sorted = mutant_struct_sort(files)
+disp('Loaded');
+mutes = unique(struct2mat_mutant(files,'mutant'));
+files_sorted = files(1);
+antibody_order = {'monomerApo','monomer4b12','monomer5e3','monomer4b12-5e3','monomer5e3-4b12','polymerApo','polymer4b12','polymer5e3','polymer4b12-5e3','polymer5e3-4b12'};
+hits = [];
+for i = 1:length(mutes)
+    for j = 1:length(files)
+        if str2double(files(j).mutant) == mutes(i)
+            hits(end+1) = j;
+        end
+    end
+    for k = 1:length(antibody_order)
+        for l = 1:length(hits)
+            if strcmp(strcat(files(hits(l)).state,files(hits(l)).antibody),antibody_order(k))
+                files_sorted(end+1) = files(hits(l)); 
+            end
+        end
+    end
+    hits = [];
+end
+files_sorted = files_sorted(2:length(files_sorted));
 end
 
 

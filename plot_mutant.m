@@ -35,7 +35,7 @@ else
             for l = 1:length(files)
                 x_corr_factor= xzero_standard - get_xcoord_of_zero(files(l).x,files(l).y_cor);
                 legend_name = strcat(files(l).mutant,'C-',files(l).state,'-',files(l).antibody);
-                plot(files(l).x + x_corr_factor,files(l).y_cor/files(l).di_val_cor,'DisplayName',char(legend_name));
+                plot(files(l).x + x_corr_factor,files(l).y_cor_norm,'DisplayName',char(legend_name));
                 legend('-DynamicLegend');
             end
             hold off
@@ -61,7 +61,7 @@ else
                 legend_name = files(cur_index).antibody;
                 [lspec,color,legend_name] = get_color_scheme(color_scheme,files(cur_index));
                 plot(files(cur_index).x+x_corr_factor,files(cur_index).y_cor_norm,lspec,'color',color,'linewidth',1,'DisplayName',char(legend_name));
-                legend('-DynamicLegend');
+                
                 title(strcat(mutant_id,'C'),'FontName','arial','fontweight','normal')
             end
             return
@@ -96,19 +96,21 @@ function plot_aesthetics(varargin)
 switch varargin{1}
     case 'figure'
         %aesthetics:
-        xlabel('Magnetic Field (mT)','FontName','arial','fontsize',11)
+        %xlabel('Magnetic Field (mT)','FontName','arial','fontsize',11)
         set(gca,'yticklabel','');
         axis([343 353 -inf inf])
         set(gcf, 'Units', 'centimeters', 'Position', [0, 0, 1024, 800], 'PaperUnits', 'centimeters','PaperSize', [21, 29.7])
         set (gcf,'InvertHardcopy','off','Color',[1 1 1])
         grid off
         box off
+        
     case 'default'
         set(gcf, 'Units', 'centimeters', 'Position', [0, 0, 1024, 800], 'PaperUnits', 'centimeters','PaperSize', [21, 29.7])
         grid off
         set (gcf,'InvertHardcopy','off','Color',[1 1 1])
         axis([342 355 -inf inf])
         xlabel('Magnetic Field (mT)','FontName','arial','fontsize',11)
+        legend('-DynamicLegend');
     otherwise
        return
 end
