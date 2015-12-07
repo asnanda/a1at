@@ -145,7 +145,7 @@ for i = 1:NUMBER_OF_FILES
     files(i).p2pA = max(files(i).y_cor_norm)-min(files(i).y_cor_norm);
     
     files(i).fsm = moment(files(i).y_cor_norm,1); % should always be zero
-    files(i).ssm = 1/(moment(files(i).y_cor_norm,2));
+    files(i).ssm = log(moment(files(i).y_cor_norm,2));
 
     files(i).fsmv2 =get_mutant_moment(files,i,1);
     files(i).ssmv2 = log(1/get_mutant_moment(files,i,2));

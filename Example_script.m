@@ -6,18 +6,32 @@ files = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/4b12Data/monomer/');
 files2 = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/4b12Data/4b12/');
 %second spectral moment^{-1} vs
 
-figure(1)
+fig = figure(1);
 title('\DeltaH^{-1} vs  Residue / Monomer, Monomer4b12')
+%axis([min([struct2mat_mutant(files,'delH') struct2mat_mutant(files2,'delH')]) 5 min([struct2mat_mutant(files,'ssm') struct2mat_mutant(files2,'ssm')]) max([struct2mat_mutant(files,'ssm') struct2mat_mutant(files2,'ssm')])])
+
+x1 = (struct2mat_mutant(files,'delH'));
+x2 = (struct2mat_mutant(files2,'delH'));
+y1 = struct2mat_mutant(files,'ssm'); 
+y2 = struct2mat_mutant(files2,'ssm');
 
 hold on
-scatter((struct2mat_mutant(files,'delH')),struct2mat_mutant(files,'ssmv2'),'k','filled');
-scatter((struct2mat_mutant(files2,'delH')),struct2mat_mutant(files2,'ssmv2'),'r','filled');
+scatter(x1,y1,'k','filled');
+scatter(x2,y2,'r','filled');
+ax = fig.CurrentAxes.Position;
+ax_lims = [fig.CurrentAxes.XLim fig.CurrentAxes.YLim];
+
 
 
 for m = 1:length(files)
     for z = 1:length(files2)
         if strcmp(files(m).mutant, files2(z).mutant)
-            quiver(files(m).delH,files(m).ssmv2,files2(z).delH -files(m).delH,files2(z).ssmv2 - files(m).ssmv2)
+            coords = [x1(m) y1(m) x2(z) y2(z)];
+            coords(1) = ax(1)+ ((coords(1)-ax_lims(1))/(ax_lims(2)-ax_lims(1)))*ax(3);
+            coords(2) = ax(2)+ ((coords(2)-ax_lims(3))/(ax_lims(4)-ax_lims(3)))*ax(4);
+            coords(3) = ax(1)+ ((coords(3)-ax_lims(1))/(ax_lims(2)-ax_lims(1)))*ax(3);
+            coords(4) = ax(2)+ ((coords(4)-ax_lims(3))/(ax_lims(4)-ax_lims(3)))*ax(4);
+            annotation('arrow',[coords(1) coords(3)],[coords(2) coords(4)])
         end
     end
 end
@@ -29,10 +43,9 @@ legend('Monomer','4b12');
 xlabel('\DeltaH^{-1}','fontsize',12)
 ylabel('SSM^{-1}','fontsize',12);
 
-labelpoints(struct2mat_mutant(files,'delH'),struct2mat_mutant(files,'ssmv2'),struct2mat_mutant(files,'mutant'),'N')
-labelpoints(struct2mat_mutant(files2,'delH'),struct2mat_mutant(files2,'ssmv2'),struct2mat_mutant(files2,'mutant'),'S')
+labelpoints(x1,y1,struct2mat_mutant(files,'mutant'),'NW')
+%labelpoints(x2,y2,struct2mat_mutant(files2,'mutant'),'S')
 %labelpoints(mutant_struct2mat(files3,'delH'),mutant_struct2mat(files3,'ssm'),mutant_struct2mat(files3,'mutant'),'S')
-
 
 
 
