@@ -135,8 +135,10 @@ for i = 1:NUMBER_OF_FILES
     files(i).di_val_cor = trapz(files(i).x,files(i).si_cor);
     files(i).y_cor_norm = files(i).y_cor/files(i).di_val_cor;
     files(i).y_cor_formoment = files(i).y_cor/trapz(files(i).y_cor);
-    files(i).si_cor_norm = files(i).si_cor / (files(i).di_val_cor);
-    files(i).si_cor_from_y_cor_norm = baseline_correct_mutant(files(i).x,cumsum(files(i).y_cor_norm),'absorbance','poly2');
+    files(i).si_cor_norm = files(i).si_cor / max(files(i).si_cor);
+    files(i).si_cor_norm_di = files(i).si_cor/ (files(i).di_val_cor);
+    
+    %files(i).si_cor_from_y_cor_norm = baseline_correct_mutant(files(i).x,cumsum(files(i).y_cor_norm),'absorbance','poly2');
     
     % generate spectral summary measurements--------------------------------
     files(i).delH = 1/(files(i).x(files(i).y == min(files(i).y)) - files(i).x(files(i).y == max(files(i).y)));

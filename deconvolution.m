@@ -1,9 +1,9 @@
 clc
 clear all
 close all
-files = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/4b12Data/all/');
-files2 = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/4b12Data/monomer/');
-files3 = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/4b12Data/4b12/');
+files = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/5e3Data/Polymer/');
+files2 = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/5e3Data/Monomer/');
+files3 = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/5e3Data/Polymer/');
 
 
 %cumsum(files(i).y-mean(files(i).y));
@@ -53,12 +53,12 @@ s = B*[V(:,512) V(:,511)];
 t = C*[V(:,512) V(:,511)];
 
 hold on
+figure(6)
 scatter(r(:,1),r(:,2),'k')
 scatter(s(:,1),s(:,2),'r')
 scatter(t(:,1),t(:,2),'b')
 
 
-break
 
 for k = 1:lengthA
     alpha(k) = A(k,:)*V(:,512);
@@ -70,13 +70,13 @@ hold on;
 scatter(alpha,beta)
 
 P = polyfit(alpha,beta,1);
-x = linspace(-5,40,1000);
+x = linspace(-1000,1000,2000);
 y = P(1)*x+P(2);
 plot(x,y,'r-.');
 
-figure(2)
-hold on
-for l = 1:1000
+%figure(2)
+%hold on
+for l = 1:2000
     spectra = x(l)*V(:,512)+y(l)*V(:,511);
     peak = find(ismember(spectra,max(spectra)));
     max_dist = 512-peak;
@@ -87,6 +87,7 @@ for l = 1:1000
     
     %calculate Hsy
 end
+
 figure(4)
 plot(x,rmsd)
 %rmsd = sort(rmsd);
@@ -95,8 +96,8 @@ plot(x,rmsd)
 DataInv = 1.01*max(rmsd) - rmsd;
 [Minima,MinIdx] = findpeaks(DataInv);
 
-purespec1 = x(MinIdx(2))*V(:,512)+y(MinIdx(2))*V(:,511);
-purespec2 = x(MinIdx(5))*V(:,512)+y(MinIdx(5))*V(:,511);
+purespec1 = x(MinIdx(1))*V(:,512)+y(MinIdx(1))*V(:,511);
+purespec2 = x(MinIdx(2))*V(:,512)+y(MinIdx(2))*V(:,511);
 
 figure(3)
 hold on

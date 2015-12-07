@@ -54,16 +54,23 @@ else
             hold on
             xzero_standard = get_xcoord_of_zero(files(index_list(1)).x,files(index_list(1)).y_cor);
             plot_aesthetics(style); % call the plot aesthetics.
+            
+            
+            
+            
+            axis_list = []
             for p = 1:length(index_list)
                 cur_index = index_list(p);
+                axis_list = [axis_list files(cur_index).y_cor_norm];
                 x_corr_factor= xzero_standard - get_xcoord_of_zero(files(cur_index).x,files(cur_index).y_cor);
-                %legend_name = strcat(files(cur_index).mutant,'C-',files(cur_index).state,'-',files(cur_index).antibdy);
-                legend_name = files(cur_index).antibody;
                 [lspec,color,legend_name] = get_color_scheme(color_scheme,files(cur_index));
                 plot(files(cur_index).x+x_corr_factor,files(cur_index).y_cor_norm,lspec,'color',color,'linewidth',1,'DisplayName',char(legend_name));
-                
-                title(strcat(mutant_id,'C'),'FontName','arial','fontweight','normal')
+                %title(strcat(mutant_id,'C'),'FontName','arial','fontweight','normal')
             end
+            
+            axis([342 353 1.05*min(axis_list) 1.05*max(axis_list)]);
+
+            hold off
             return
     end
 end
@@ -97,10 +104,12 @@ switch varargin{1}
     case 'figure'
         %aesthetics:
         %xlabel('Magnetic Field (mT)','FontName','arial','fontsize',11)
-        set(gca,'yticklabel','');
-        axis([343 353 -inf inf])
-        set(gcf, 'Units', 'centimeters', 'Position', [0, 0, 1024, 800], 'PaperUnits', 'centimeters','PaperSize', [21, 29.7])
-        set (gcf,'InvertHardcopy','off','Color',[1 1 1])
+        set(gca,'YTickLabels','','YTick','','LineWidth',2,'TickDir','out','TickLength',[0.03 0.02],'XMinorTick','on','XTick',344:2:353);
+        set(gca,'YColor',[1 1 1]);
+        set(gca,'XColor',[1 1 1]);
+        
+        %set(gcf, 'Units', 'centimeters', 'Position', [0, 0, 40, 50], 'PaperUnits', 'centimeters','PaperSize', [21, 29.7])
+        %set (gcf,'InvertHardcopy','off','Color',[1 1 1])
         grid off
         box off
         
@@ -139,7 +148,7 @@ switch iscell(color_scheme)
             legend_name = strcat(S.mutant,'C-',S.state,'-',S.antibody);
         case '4b12figure'
             styles = {'monomerApo','-','monomer4b12','-','polymerApo','-','polymer5e3','-','monomer5e3','-','monomer4b12-5e3','-'};
-            colors = {'monomerApo','k','monomer4b12','r','polymerApo','k','polymer5e3','r','monomer5e3','g','monomer4b12-5e3','b'};
+            colors = {'monomerApo','k','monomer4b12','b','polymerApo','k','polymer5e3','r','monomer5e3','g','monomer4b12-5e3','b'};
             legend_name = S.antibody;
         case '5e3figure'
             styles = {'monomerApo','-','monomer4b12','-','polymerApo','-','polymer5e3','-','monomer5e3','-','monomer4b12-5e3','-'};
