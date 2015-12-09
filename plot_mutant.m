@@ -58,7 +58,7 @@ else
             
             
             
-            axis_list = []
+            axis_list = [];
             for p = 1:length(index_list)
                 cur_index = index_list(p);
                 axis_list = [axis_list files(cur_index).y_cor_norm];
@@ -114,7 +114,7 @@ switch varargin{1}
         box off
         
     case 'default'
-        set(gcf, 'Units', 'centimeters', 'Position', [0, 0, 1024, 800], 'PaperUnits', 'centimeters','PaperSize', [21, 29.7])
+        set(gcf, 'Units', 'centimeters', 'Position', [0, 0, 500, 500], 'PaperUnits', 'centimeters');%'PaperSize', [21, 29.7])
         grid off
         set (gcf,'InvertHardcopy','off','Color',[1 1 1])
         axis([342 355 -inf inf])

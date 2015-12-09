@@ -1,41 +1,74 @@
 clc
 clear all
 close all
-files = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/5e3Data/Polymer/');
+files = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/5e3Data/all/');
 files2 = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/5e3Data/Monomer/');
 files3 = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/5e3Data/Polymer/');
 
+for i = 1:length(files2)
+    var_mon(i) = var(files2(i).y_cor_norm);
+    var_pol(i) = var(files3(i).y_cor_norm);
+    var_ratio(i) = var_mon(i)/var_pol(i);
+end
+
+hold on
+scatter(struct2mat_mutant(files2,'mutant'),log(var_mon))
+scatter(struct2mat_mutant(files3,'mutant'),log(var_pol),'r')
+plot(struct2mat_mutant(files3,'mutant'),(var_ratio),'k')
+plot(struct2mat_mutant(files3,'mutant'),(ones(length(files3))),'-g');
+
+figure(2)
+hold on
+
+for i = 1:length(files2)
+   plot(files2(i).x,sort(cumsum((files2(i).si_cor_norm_di))),'k');
+   plot(files3(i).x,sort(cumsum((files3(i).si_cor_norm_di))),'r');
+end
+
+
+
+
+break
 
 %cumsum(files(i).y-mean(files(i).y));
 
 
-
 % can generate eigenvector defining 92.17% of the data for monomer
-A = files(1).si_cor_norm;
-B = files2(1).si_cor_norm;
-C = files3(1).si_cor_norm;
+A = files(1).y_cor_norm;
+B = files2(1).y_cor_norm;
+C = files3(1).y_cor_norm;
 
 for i = 2:length(files)
-    m = files(i).si_cor_norm;
+    m = files(i).y_cor_norm;% - mean(files(i).si_cor_norm_di);
     
     %m = m/max(m);
     %plot(m)
+    %{
     for j = 1:length(m)
-        %if sign(m(j)) == -1
-            %m(j) = 0;
-        %end
+        if sign(m(j)) == -1
+            m(j) = 0;
+        end
     end
+    %}
     A = [A;m];
    
 end
 
 for i = 2:length(files2)
-    n = files2(i).si_cor_norm;
-    o = files3(i).si_cor_norm;
+    n = files2(i).y_cor_norm;
+    o = files3(i).y_cor_norm;
     B = [B;n];
     C = [C;o];
 end
 
+
+
+
+break
+
+
+%simplisma(A,k,2,20);
+break
 
 [pc,score,latent,tsquare] = princomp(A);
 
@@ -48,15 +81,16 @@ e = eig(M);
 
 [lengthA,~] = size(A);
 
-r = A*[V(:,512) V(:,511)];
-s = B*[V(:,512) V(:,511)];
-t = C*[V(:,512) V(:,511)];
+r = A*[pc(:,1) pc(:,2)];
+s = B*[pc(:,1) pc(:,2)];
+t = C*[pc(:,1) pc(:,2)];
 
 hold on
-figure(6)
+figure(1)
 scatter(r(:,1),r(:,2),'k')
 scatter(s(:,1),s(:,2),'r')
 scatter(t(:,1),t(:,2),'b')
+
 
 
 
@@ -70,19 +104,19 @@ hold on;
 scatter(alpha,beta)
 
 P = polyfit(alpha,beta,1);
-x = linspace(-1000,1000,2000);
+x = linspace(-20000,200000,200000);
 y = P(1)*x+P(2);
 plot(x,y,'r-.');
 
 %figure(2)
 %hold on
-for l = 1:2000
+for l = 1:200000
     spectra = x(l)*V(:,512)+y(l)*V(:,511);
     peak = find(ismember(spectra,max(spectra)));
     max_dist = 512-peak;
     dist = min(max_dist,peak)-1;
     rmsd(l) = sqrt((sum(spectra(peak-dist:peak)-flipud(spectra(peak:peak+dist))).^2)/dist);
-    %plot(spectra(peak-dist:peak));
+    %plot(spectra);
     %plot(flipud(spectra(peak:peak+dist)));
     
     %calculate Hsy
