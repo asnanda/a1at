@@ -137,6 +137,7 @@ for i = 1:NUMBER_OF_FILES
     files(i).y_cor_formoment = files(i).y_cor/trapz(files(i).y_cor);
     files(i).si_cor_norm = files(i).si_cor / max(files(i).si_cor);
     files(i).si_cor_norm_di = files(i).si_cor/ (files(i).di_val_cor);
+    files(i).si_cor_norm_si = files(i).si_cor / trapz(files(i).si_cor);
     
     %files(i).si_cor_from_y_cor_norm = baseline_correct_mutant(files(i).x,cumsum(files(i).y_cor_norm),'absorbance','poly2');
     
