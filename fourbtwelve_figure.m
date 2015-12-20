@@ -35,11 +35,13 @@ set(gca, 'box', 'off','ytick', [],'xtick', [] , 'xcolor', 'w' ,'ycolor', 'w'  )
 
 
 
-for i = 1:6
+for i = 1:
     plot_pos = (6-i)*(totheight/6)+offset;
     subplot('Position',[0.08, plot_pos, plot_width,plot_height])
     plot_mutant(files,num2str(mutantnames(i)),'figure','4b12figure');
     text(0.8,0.6,strcat(resnames(i),num2str(mutantnames(i)),'C') ,'Units','normalized','Linestyle','None','Fontsize',14,'FontName','arial');
+    set(gca,'XColor',[1 1 1]);
+
 end
 set(gca,'XColor',[0 0 0]);
 text(0.3,-.35,'Magnetic Field[mT]','Units','normalized','Linestyle','None','Fontsize',14,'FontName','arial');

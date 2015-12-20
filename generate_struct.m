@@ -1,23 +1,23 @@
-%{ generate_struct: Open .spc files from our CW EPR experiments and
-% load the data, and characteristics, into a struct for future manipulation
+% generate_struct: Open .spc files from our CW EPR experiments and
+% load the data, and characteristics, into a struct for  manipulation.
 %
-% generate_struct: when run without any inputs, opens a GUI so that the we can
-% select epr files to open. It can also accept a path to a file as
-% an input if the path is put in 'quotes' with the extension '.spc'
+% generate_struct: when run without any inputs, opens a GUI so that the you can
+% select epr files to open. It can also accept a path to a directory
+% as an input if the path is put in 'quotes'.
 %IN
 %        generate_struct;  -> UI. window
 %        generate_struct('directory1')
 %        generate_struct('directory1','directory2'..etc) NOTE -> Inefficent
 %OUT
-%           struct files = generate_struct;
-%           struct files = generate_struct('path1','path2','path3'...); 
+%        struct files = generate_struct;
+%        struct files = generate_struct('path1','path2','path3'...); 
 %
 %
 % generate_struct: A function that opens spc files related to the antibody 
 % CW experiments and extracts their data for further mainpulation. It pulls
 % relevant spectral parameters, generates normalized and baseline
 % corrected intensity measurements, and generates calculated spectral
-% values (?H, spectral moments, etc)
+% values (delH, spectral moments, etc)
 %
 %
 % Inputs:
@@ -28,7 +28,7 @@
 %  output0  - a struct  storing the following data:
 %     file name                        .name             ex. {'name'}
 %     file path                        .filepath         ex. {'file/path/file.spc'}
-%     mutant                           .mutant           ex.   {'32'}
+%     mutant                           .mutant           ex. {'32'}
 %     antibody                         .antibody         ex. {'Apo'} / {'4b12'} / {'5e3'} 
 %     state                            .state            ex. {'monomer'} / {'polymer'}
 %     magnetic field data (mT)         .x                ex. [val1...valn]
@@ -42,7 +42,7 @@
 %     spectral parameters              .spectra_params   ex. [MWFreq,Npoints..etc]
 %     1/?H,center peak separation(mT)  .delH             ex. (4.223)
 %     1/first CENTRAL spec. moment     .fsm              ex. (0)
-%     1/second CENTRAL spec. moment    .ssm              ex. (4.e33)
+%     1/second CENTRAL spec. moment    .ssm              ex. (4.0e33)
 
 % Example: 
 %    files = generate_struct;
@@ -54,10 +54,18 @@
 % Subfunctions:             get_characteristics(characteristic, name)
 %                               - parses file names,
 %                               - pulls trial conditions (antibody, state, etc)
+%                           mutant_struct_sort(struct)
+%                               - sorts struct by first by mutant, then
+%                               state, then antibody. Mutants by increasing number,
+%                               monomer before polymer, Apo before 4b12/5e3, and  
 %                           get_mutant_moment
+%                               - attempted implementation of the first
+%                               spectral moment, current not working
 %
-% MAT-files required:       easyspin package for eprload
-%}
+% MAT-files required:       struct2mat_mutant.m
+%                           basline_correct_mutant.m
+%                           easyspin package for eprload
+%
 
 function files = generate_struct(varargin)
 %define the empty struct -> files
@@ -71,9 +79,9 @@ switch nargin
         filenames = unique(filenames);
     case 1
         % handle a directory
-        filepath = varargin{1};
-        tmp_filenames = dir(strcat(filepath,'*.spc'));
-        filenames = struct2mat_mutant(tmp_filenames,'name');
+        filepath = varargin{1}; % get the first arguement
+        tmp_filenames = dir(strcat(filepath,'*.spc')); % get the spc files
+        filenames = struct2mat_mutant(tmp_filenames,'name'); % extract filenames from the 'dir' struct. 
         
     otherwise % more than one directory (uses recursion) -> can take time
         % call the generate struct function on the directories passed in,
@@ -83,7 +91,6 @@ switch nargin
         end
         
         files = mutant_struct_sort(first);
-       
        
         return
         
@@ -125,9 +132,9 @@ for i = 1:NUMBER_OF_FILES
     files(i).spectra_params = Params;
     
     % get corrected magnetic field, intensity data------------------------
-    % baseline corretion is carried out by the baseline_correct_mutant function, found
-    % in baseline_correct_mutant.m
-    % current paramters used are "linear" for EPR correction, and "Poly2"
+    % baseline corretion is carried out by the baseline_correct_mutant function
+    % found in baseline_correct_mutant.m
+    % current paramters used are "linear" for EPR correction, and "poly2"
     % for absorbance spectra correction. 
      
     files(i).y_cor = baseline_correct_mutant(files(i).x,files(i).y,'epr','linear');
@@ -138,9 +145,7 @@ for i = 1:NUMBER_OF_FILES
     files(i).si_cor_norm = files(i).si_cor / max(files(i).si_cor);
     files(i).si_cor_norm_di = files(i).si_cor/ (files(i).di_val_cor);
     files(i).si_cor_norm_si = files(i).si_cor / trapz(files(i).si_cor);
-    
-    %files(i).si_cor_from_y_cor_norm = baseline_correct_mutant(files(i).x,cumsum(files(i).y_cor_norm),'absorbance','poly2');
-    
+        
     % generate spectral summary measurements--------------------------------
     files(i).delH = 1/(files(i).x(files(i).y == min(files(i).y)) - files(i).x(files(i).y == max(files(i).y)));
     files(i).p2pA = max(files(i).y_cor_norm)-min(files(i).y_cor_norm);
@@ -150,9 +155,6 @@ for i = 1:NUMBER_OF_FILES
 
     files(i).fsmv2 =get_mutant_moment(files,i,1);
     files(i).ssmv2 = log(1/get_mutant_moment(files,i,2));
-
-     
-    
 
 end % loop through files end
 
@@ -169,35 +171,36 @@ end % generate_struct end
 
 
 
+% main function for parsing file names
 function result = get_characteristic(characteristic,name)
 switch characteristic
     case 'name'
         [~,name,~] = fileparts(char(name));
         result = name;
         
-    case 'state'
-        if length(regexp(name,'pol','match')) >= 1
-            result = {'polymer'}; 
+    case 'state' % parse for state
+        if length(regexp(name,'pol','match')) >= 1 % if match for 'pol'
+            result = {'polymer'}; % -> set as polymer
         else
-            result = {'monomer'};
+            result = {'monomer'}; %-> else set as monomer
         end
 
     case 'antibody'
-        if length(regexpi(name,'4b12','match')) >= 1
-            if length(regexpi(name,'5e3','match')) >= 1 % handles dual binding condition
+        if length(regexpi(name,'4b12','match')) >= 1 % if a hit for 4b12,
+            if length(regexpi(name,'5e3','match')) >= 1 % check for dual 5e3, handles dual binding condition
                 result = {'4b12-5e3'};
-            else
-                result = {'4b12'};
+            else 
+                result = {'4b12'}; %else set as 4b12
             end
            
-        elseif length(regexpi(name,'5e3','match')) >= 1
+        elseif length(regexpi(name,'5e3','match')) >= 1 %check for hit for 5e3
             result = {'5e3'};
         else
-            result = {'Apo'};
+            result = {'Apo'}; % if no hits, then -> Apo
         end
         
     case 'mutant'
-        match = regexp(name,'[A-Z](\d+)[A-Z]|(\d+)[C]|(\d+)','match');
+        match = regexp(name,'[A-Z](\d+)[A-Z]|(\d+)[C]|(\d+)','match'); %regex for matching '123C' type names
         if length(match) >= 1
             match2 = regexp(match(1),'(\d+)','match'); % match(1) is used because the resisude number comes before any other numbers in a file name
             result = match2{1};
@@ -209,34 +212,36 @@ end % end switch statement
 end % end function
 
 
+%function for sorting struct array according to "antibody_order" variable
 function files_sorted = mutant_struct_sort(files)
 disp('Loaded');
 mutes = unique(struct2mat_mutant(files,'mutant'));
 files_sorted = files(1);
 antibody_order = {'monomerApo','monomer4b12','monomer5e3','monomer4b12-5e3','monomer5e3-4b12','polymerApo','polymer4b12','polymer5e3','polymer4b12-5e3','polymer5e3-4b12'};
 hits = [];
-for i = 1:length(mutes)
-    for j = 1:length(files)
-        if str2double(files(j).mutant) == mutes(i)
-            hits(end+1) = j;
+for i = 1:length(mutes) % walk through the list of unique mutants
+    for j = 1:length(files) % walk through the struct.
+        if str2double(files(j).mutant) == mutes(i) % if the mutants line up,
+            hits(end+1) = j; % store the indexes of those mutant sin 'hits'
         end
     end
-    for k = 1:length(antibody_order)
-        for l = 1:length(hits)
-            if strcmp(strcat(files(hits(l)).state,files(hits(l)).antibody),antibody_order(k))
-                files_sorted(end+1) = files(hits(l)); 
+    
+    for k = 1:length(antibody_order) % walk through the order 
+        for l = 1:length(hits) % walk through 'hits' generated above for a specific mutant.
+            if strcmp(strcat(files(hits(l)).state,files(hits(l)).antibody),antibody_order(k)) % if the entry in the order matches the entry in files,
+                files_sorted(end+1) = files(hits(l)); % then add it to the 'files_sorted' struct.
             end
         end
     end
-    hits = [];
+    hits = []; %clean the hits variable, so it can be reused for the next mutant.
 end
-files_sorted = files_sorted(2:length(files_sorted));
+files_sorted = files_sorted(2:length(files_sorted)); %delete the value used to intialize the array
+return
 end
 
 
-
+% new implementation to calcualte ssm, fsm. Not working.
 function result = get_mutant_moment(files,n,order)
-% new implementation
 
 switch order
     case 1
@@ -247,7 +252,7 @@ end
 
 
 return
-
+%{
 %first attempt
 switch order
     case 1
@@ -263,6 +268,7 @@ switch order
         ssm = trapz(y_vals);
         result = ssm;
 end % end N switch
+%}
 end
 
 

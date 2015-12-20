@@ -1,3 +1,7 @@
+
+
+
+
 function  result = struct2mat_mutant(S,field)
 
 switch ischar(S(1).(deblank(field))) % if the field is a character array, then output a string.
@@ -29,7 +33,6 @@ switch ischar(S(1).(deblank(field))) % if the field is a character array, then o
             struct_sum(n) = cellstr(S(n).(deblank(field)));
         end
 end
-
 
 result = struct_sum;
 end

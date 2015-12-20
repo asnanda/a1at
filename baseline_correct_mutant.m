@@ -1,8 +1,62 @@
-% working. 
+% baseline_correct_mutant: baseline correct EPR, absorbance spectra from
+% raw epr data stored in an array.
+%
+% baseline_correct_mutant requires four inputs at all times, in order to
+% carry out a baseline correction
+%
+%IN
+%       baseline_correct_mutant(b,s,spectra,fit_type)
+%OUT
+%        corrected_vals = baseline_correct_mutant(b,s,spectra,fit_type);
+%    
+%
+%
+% baseline_correct_mutant: A function that carrys out linear and polynomial
+% baseline correction of epr and absorbance spectra as required. It works
+% by walking along the data set from both sides, generating two data sets
+% of points (b,s) that have the minimum variance in 1/3rd of the spectra,
+% and fitting either a line or polynomial to this set as the 'corrected'
+% baseline. Baseline values are the subtrated out from uncorrected data to
+% yield corrected data. 
+%
+%
+% Inputs:
+%    b          - x_vals for  used for baseline correction
+%    s          - y_vals for baseline correction, can be EPR, or
+%                 Absorbance, or even Double Integral values, in an array.
+%    spectra    - refers to the spectra being fit, each ahs different
+%                 parameters. Either 'epr' or 'absorbance'
+%    fittype    - 
+%
+% Outputs:
+%  output0  - an array with corrected valuee:
+%     corrected_value1        ex. [314.5, 342.4, 244.25 etc ...];
+%  output1 -  a dummy output using medians rather than points for linear
+%  interpolation
+%    corrected_value2         ex. [314.5, 342.4, 244.25 etc ...];
 
-
-
-
+% Example: 
+%    files(i).y_cor = baseline_correct_mutant(files(i).x,files(i).y,'epr','linear');
+%   or 
+%    y_vals = baseline_correct_mutant(x_vals,y_vals,'epr','linear');
+%
+% Other m-files required:   baseline_correct_mutant.m - for  basline correction
+%
+% Subfunctions:             get_characteristics(characteristic, name)
+%                               - parses file names,
+%                               - pulls trial conditions (antibody, state, etc)
+%                           mutant_struct_sort(struct)
+%                               - sorts struct by first by mutant, then
+%                               state, then antibody. Mutants by increasing number,
+%                               monomer before polymer, Apo before 4b12/5e3, and  
+%                           get_mutant_moment
+%                               - attempted implementation of the first
+%                               spectral moment, current not working
+%
+% MAT-files required:       struct2mat_mutant.m
+%                           basline_correct_mutant.m
+%                           easyspin package for eprload
+%
 
 
 function [corrected_value1, corrected_value2] = baseline_correct_mutant(b,s,spectra,fit_type)
@@ -41,8 +95,6 @@ if isempty(s) == 0
                     
                     [lin_coeff1,Stc] = polyfit(x_set1,y_set1,1); % now with MDP
                     [lin_coeff2,Stc] = polyfit(x_set2,y_set2,1); % now the median
-                    
-
                     for n = 1:length(s)
                         corrected_value1(n) = s(n) - (lin_coeff1(1)*(b(n))+lin_coeff1(2)); % MDP 
                         corrected_value2(n) = s(n) - (lin_coeff2(1)*(b(n))+lin_coeff2(2)); % Median
@@ -61,7 +113,6 @@ if isempty(s) == 0
             % This transform only need be applied to the MDP sets, the data
             % extracted directly from the array, rather than being wrapped
             % around it.
-            
             
             DATA_SET_SIZE = 5;
             [up_start, up_end] = get_indicies(s,'absorbance','upfield',DATA_SET_SIZE);
@@ -222,11 +273,6 @@ switch type
                 end
             end
         end
-
-        
-        
-        
-        
 end % end switch type
 end % end get_indicies function
 

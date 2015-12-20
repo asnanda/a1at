@@ -35,8 +35,10 @@ else
             for l = 1:length(files)
                 x_corr_factor= xzero_standard - get_xcoord_of_zero(files(l).x,files(l).y_cor);
                 legend_name = strcat(files(l).mutant,'C-',files(l).state,'-',files(l).antibody);
-                plot(files(l).x + x_corr_factor,files(l).y_cor_norm,'DisplayName',char(legend_name));
+                plot(files(l).x + x_corr_factor,files(l).y_cor_norm,'Di`1122222splayName',char(legend_name));
                 legend('-DynamicLegend');
+                
+                
             end
             hold off
             return
@@ -54,8 +56,7 @@ else
             hold on
             xzero_standard = get_xcoord_of_zero(files(index_list(1)).x,files(index_list(1)).y_cor);
             plot_aesthetics(style); % call the plot aesthetics.
-            
-            
+           
             
             
             axis_list = [];
@@ -64,11 +65,11 @@ else
                 axis_list = [axis_list files(cur_index).y_cor_norm];
                 x_corr_factor= xzero_standard - get_xcoord_of_zero(files(cur_index).x,files(cur_index).y_cor);
                 [lspec,color,legend_name] = get_color_scheme(color_scheme,files(cur_index));
-                plot(files(cur_index).x+x_corr_factor,files(cur_index).y_cor_norm,lspec,'color',color,'linewidth',1,'DisplayName',char(legend_name));
-                %title(strcat(mutant_id,'C'),'FontName','arial','fontweight','normal')
+                plot(files(cur_index).x+x_corr_factor,files(cur_index).y_cor_norm,lspec,'color',color,'linewidth',2,'DisplayName',char(legend_name));
+                
             end
             
-            axis([342 353 1.05*min(axis_list) 1.05*max(axis_list)]);
+            axis([344 352 1.05*min(axis_list) 1.05*max(axis_list)]);
 
             hold off
             return
@@ -104,22 +105,22 @@ switch varargin{1}
     case 'figure'
         %aesthetics:
         %xlabel('Magnetic Field (mT)','FontName','arial','fontsize',11)
-        set(gca,'YTickLabels','','YTick','','LineWidth',2,'TickDir','out','TickLength',[0.03 0.02],'XMinorTick','on','XTick',344:2:353);
+        set(gca,'YTickLabels','','YTick','','LineWidth',2,'TickDir','out','TickLength',[0.03 0.02],'XMinorTick','on','XTick',344:2:352);
         set(gca,'YColor',[1 1 1]);
-        set(gca,'XColor',[1 1 1]);
+        %set(gca,'XColor',[1 1 1]);
         
         %set(gcf, 'Units', 'centimeters', 'Position', [0, 0, 40, 50], 'PaperUnits', 'centimeters','PaperSize', [21, 29.7])
-        %set (gcf,'InvertHardcopy','off','Color',[1 1 1])
+        set (gcf,'InvertHardcopy','off','Color',[1 1 1])
         grid off
         box off
         
     case 'default'
-        set(gcf, 'Units', 'centimeters', 'Position', [0, 0, 500, 500], 'PaperUnits', 'centimeters');%'PaperSize', [21, 29.7])
+        %set(gcf, 'Units', 'centimeters', 'Position', [0, 0, 500, 500], 'PaperUnits', 'centimeters');%'PaperSize', [21, 29.7])
         grid off
         set (gcf,'InvertHardcopy','off','Color',[1 1 1])
-        axis([342 355 -inf inf])
+        axis([342 354 -inf inf])
         xlabel('Magnetic Field (mT)','FontName','arial','fontsize',11)
-        legend('-DynamicLegend');
+        %legend('-DynamicLegend');
     otherwise
        return
 end
@@ -148,7 +149,7 @@ switch iscell(color_scheme)
             legend_name = strcat(S.mutant,'C-',S.state,'-',S.antibody);
         case '4b12figure'
             styles = {'monomerApo','-','monomer4b12','-','polymerApo','-','polymer5e3','-','monomer5e3','-','monomer4b12-5e3','-'};
-            colors = {'monomerApo','k','monomer4b12','b','polymerApo','k','polymer5e3','r','monomer5e3','g','monomer4b12-5e3','b'};
+            colors = {'monomerApo','b','monomer4b12','r','polymerApo','k','polymer5e3','r','monomer5e3','g','monomer4b12-5e3','b'};
             legend_name = S.antibody;
         case '5e3figure'
             styles = {'monomerApo','-','monomer4b12','-','polymerApo','-','polymer5e3','-','monomer5e3','-','monomer4b12-5e3','-'};
