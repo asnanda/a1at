@@ -5,7 +5,7 @@
 % carry out a baseline correction
 %
 %IN
-%       baseline_correct_mutant(b,s,spectra,fit_type)
+%        baseline_correct_mutant(b,s,spectra,fit_type)
 %OUT
 %        corrected_vals = baseline_correct_mutant(b,s,spectra,fit_type);
 %    
@@ -26,7 +26,7 @@
 %                 Absorbance, or even Double Integral values, in an array.
 %    spectra    - refers to the spectra being fit, each ahs different
 %                 parameters. Either 'epr' or 'absorbance'
-%    fittype    - 
+%    fittype    - refers to the fitting mechansim, linear, polynomial etc.
 %
 % Outputs:
 %  output0  - an array with corrected valuee:
@@ -40,8 +40,7 @@
 %   or 
 %    y_vals = baseline_correct_mutant(x_vals,y_vals,'epr','linear');
 %
-% Other m-files required:   baseline_correct_mutant.m - for  basline correction
-%
+% 
 % Subfunctions:             get_characteristics(characteristic, name)
 %                               - parses file names,
 %                               - pulls trial conditions (antibody, state, etc)
@@ -53,9 +52,8 @@
 %                               - attempted implementation of the first
 %                               spectral moment, current not working
 %
-% MAT-files required:       struct2mat_mutant.m
-%                           basline_correct_mutant.m
-%                           easyspin package for eprload
+% MAT-files required:       easyspin package
+%                           
 %
 
 
@@ -170,26 +168,12 @@ if isempty(s) == 0
             return
     end 
 
- % check if the point set is empty, if it is, skip to else statement and exit.
-    
-% generate downfield point set
-% select multipe point sets, and find the median
-% if the values 'agree', then set point set as downfied. 
-% sample sets that minimze variaton .
-
-
-
-%generate upfield point set
-
-% do these generaitons via asemlbing a distribution of the values, finding
-% the mean 
-
 
 else
     warning('Error calculating baseline, point set returned');
     corrected_value1 = s;
     
-end % end outer protective loop
+end % end outer error handling loop
 
 
 end

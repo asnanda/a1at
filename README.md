@@ -3,6 +3,15 @@ functions for dealing with CW EPR spectra of a1at mutants
 
 Changes
 ========
+
+24/12/15
+========
+
+Added examples for generating delH plots, cleaned up some code, and struct2mat_mutant is no longer needed.
+
+
+10/12/15
+=========
 You can find examples for making a panel in fourbtwelve_figure.m or Example_script.m
 
 The generate_struct function can now take muultiple directores as inputs,

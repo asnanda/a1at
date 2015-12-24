@@ -8,10 +8,10 @@ files2 = generate_struct('/Users/Scott/Desktop/UCL Lab/EPR/4b12Data/4b12/');
 fig = figure(1);
 %title('SSM^{-1} vs  \DeltaH^{-1} for Monomer,4b12')
 
-x1 = (struct2mat_mutant(files,'delH'));
-x2 = (struct2mat_mutant(files2,'delH'));
-y1 = struct2mat_mutant(files,'ssm'); 
-y2 = struct2mat_mutant(files2,'ssm');
+x1 = [files.delH];
+x2 = [files2.delH];
+y1 = [files.ssm];
+y2 = [files2.ssm]; 
 
 hold on
 set (gcf,'InvertHardcopy','off','Color',[1 1 1])
@@ -41,13 +41,10 @@ end
 
 hold off
 legend('Monomer','4b12');
-xlabel('\DeltaH^{-1}','fontsize',18)
-ylabel('log(SSM)','fontsize',18);
+xlabel('\DeltaH^{-1}','fontsize',14)
+ylabel('log(SSM)','fontsize',14);
 
-labelpoints(x1,y1,struct2mat_mutant(files,'mutant'),'NW','Fontsize',14) %sufficent to only label one with arrows.
-%labelpoints(x2,y2,struct2mat_mutant(files2,'mutant'),'S')
-%labelpoints(mutant_struct2mat(files3,'delH'),mutant_struct2mat(files3,'ssm'),mutant_struct2mat(files3,'mutant'),'S')
-
+labelpoints(x1,y1,[files.mutant],'NW','Fontsize',12) %sufficent to only label one with arrows.
 
 
 

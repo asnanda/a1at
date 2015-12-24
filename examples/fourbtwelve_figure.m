@@ -35,7 +35,7 @@ set(gca, 'box', 'off','ytick', [],'xtick', [] , 'xcolor', 'w' ,'ycolor', 'w'  )
 
 
 
-for i = 1:
+for i = 1:length(files)
     plot_pos = (6-i)*(totheight/6)+offset;
     subplot('Position',[0.08, plot_pos, plot_width,plot_height])
     plot_mutant(files,num2str(mutantnames(i)),'figure','4b12figure');

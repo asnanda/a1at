@@ -62,10 +62,10 @@
 %                               - attempted implementation of the first
 %                               spectral moment, current not working
 %
-% MAT-files required:       struct2mat_mutant.m
-%                           basline_correct_mutant.m
+% MAT-files required:       basline_correct_mutant.m
 %                           easyspin package for eprload
-%
+%                          
+
 
 function files = generate_struct(varargin)
 %define the empty struct -> files
@@ -81,7 +81,7 @@ switch nargin
         % handle a directory
         filepath = varargin{1}; % get the first arguement
         tmp_filenames = dir(strcat(filepath,'*.spc')); % get the spc files
-        filenames = struct2mat_mutant(tmp_filenames,'name'); % extract filenames from the 'dir' struct. 
+        filenames = {tmp_filenames.name};
         
     otherwise % more than one directory (uses recursion) -> can take time
         % call the generate struct function on the directories passed in,
@@ -215,7 +215,8 @@ end % end function
 %function for sorting struct array according to "antibody_order" variable
 function files_sorted = mutant_struct_sort(files)
 disp('Loaded');
-mutes = unique(struct2mat_mutant(files,'mutant'));
+mutes = unique(str2double([files.mutant]));
+
 files_sorted = files(1);
 antibody_order = {'monomerApo','monomer4b12','monomer5e3','monomer4b12-5e3','monomer5e3-4b12','polymerApo','polymer4b12','polymer5e3','polymer4b12-5e3','polymer5e3-4b12'};
 hits = [];
